@@ -1,70 +1,193 @@
-# Getting Started with Create React App
+// taskReducer.js
+const initialState = {
+  tasks: []
+};
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+const ADD_TASK = 'ADD_TASK';
+const REMOVE_TASK = 'REMOVE_TASK';
 
-## Available Scripts
+export const addTask = (task) => ({
+  type: ADD_TASK,
+  payload: task
+});
 
-In the project directory, you can run:
+export const removeTask = (taskId) => ({
+  type: REMOVE_TASK,
+  payload: taskId
+});
 
-### `npm start`
+const taskReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case ADD_TASK:
+      return {
+        ...state,
+        tasks: [...state.tasks, action.payload]
+      };
+    case REMOVE_TASK:
+      return {
+        ...state,
+        tasks: state.tasks.filter((task) => task.id !== action.payload)
+      };
+    default:
+      return state;
+  }
+};
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+export default taskReducer;
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
-### `npm test`
+// TaskInput.js
+import React, { useState } from 'react';
+import { connect } from 'react-redux';
+import { addTask } from './reducers/taskReducer';
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+const TaskInput = ({ addTask }) => {
+  const [text, setText] = useState('');
 
-### `npm run build`
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (text.trim() !== '') {
+      addTask({ id: Date.now(), text });
+      setText('');
+    }
+  };
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Enter task"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+      <button type="submit">Add Task</button>
+    </form>
+  );
+};
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+export default connect(null, { addTask })(TaskInput);
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+// TaskList.js
+import React from 'react';
+import { connect } from 'react-redux';
+import { removeTask } from './reducers/taskReducer';
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+const TaskList = ({ tasks, removeTask }) => {
+  return (
+    <ul>
+      {tasks.map((task) => (
+        <li key={task.id}>
+          {task.text}{' '}
+          <button type="button" onClick={() => removeTask(task.id)}>
+            X
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+};
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+const mapStateToProps = (state) => ({
+  tasks: state.tasks
+});
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+export default connect(mapStateToProps, { removeTask })(TaskList);
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
+// App.js
+import React from 'react';
+import TaskInput from './TaskInput';
+import TaskList from './TaskList';
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+const App = () => {
+  return (
+    <div
 
-To learn React, check out the [React documentation](https://reactjs.org/).
 
-### Code Splitting
+// TaskList.js
+import React from 'react';
+import { connect } from 'react-redux';
+import { removeTask, completeTask } from './reducers/taskReducer';
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+const TaskList = ({ tasks, removeTask, completeTask }) => {
+  return (
+    <ul>
+      {tasks.map((task) => (
+        <li
+          key={task.id}
+          style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
+        >
+          <label>
+            <input
+              type="checkbox"
+              checked={task.completed}
+              onChange={() => completeTask(task.id)}
+            />
+            {task.text}
+          </label>
+          <button type="button" onClick={() => removeTask(task.id)}>
+            X
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+};
 
-### Analyzing the Bundle Size
+const mapStateToProps = (state) => ({
+  tasks: state.tasks
+});
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+export default connect(mapStateToProps, { removeTask, completeTask })(TaskList);
 
-### Making a Progressive Web App
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+// taskReducer.js
+const initialState = {
+  tasks: []
+};
 
-### Advanced Configuration
+const ADD_TASK = 'ADD_TASK';
+const REMOVE_TASK = 'REMOVE_TASK';
+const COMPLETE_TASK = 'COMPLETE_TASK';
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+export const addTask = (task) => ({
+  type: ADD_TASK,
+  payload: task
+});
 
-### Deployment
+export const removeTask = (taskId) => ({
+  type: REMOVE_TASK,
+  payload: taskId
+});
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+export const completeTask = (taskId) => ({
+  type: COMPLETE_TASK,
+  payload: taskId
+});
 
-### `npm run build` fails to minify
+const taskReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case ADD_TASK:
+      return {
+        ...state,
+        tasks: [...state.tasks, { ...action.payload, completed: false }]
+      };
+    case REMOVE_TASK:
+      return {
+        ...state,
+        tasks: state.tasks.filter((task) => task.id !== action.payload)
+      };
+    case COMPLETE_TASK:
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === action.payload ? { ...task, completed: !task.completed } : task
+        )
+      };
+    default:
+      return state;
+  }
+};
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+export default taskReducer;
